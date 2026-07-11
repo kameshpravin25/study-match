@@ -26,8 +26,8 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="Study matching platform for Amrita students",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if settings.debug else None,
+    redoc_url="/redoc" if settings.debug else None,
     lifespan=lifespan,
 )
 

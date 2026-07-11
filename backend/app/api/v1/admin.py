@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text
 from datetime import datetime, timedelta
+import os
 
 from app.core.database import get_db
 from app.models.user import User
@@ -9,7 +10,7 @@ from app.models.session import StudySession, JoinRequest, SessionParticipant
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
-ADMIN_PASSWORD = "studymatch2026"  # Change this before going live
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "studymatch2026")
 
 
 def verify_admin(password: str):
