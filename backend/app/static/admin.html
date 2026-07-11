@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyMatch Admin</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0A0A0A;
+      --surface: #141414;
+      --card: #1E1E1E;
+      --border: #2A2A2A;
+      --text-primary: #FFFFFF;
+      --text-secondary: #8E8E93;
+      --text-tertiary: #555555;
+      --accent: #818CF8;
+      --accent-soft: #312E81;
+      --success: #34D399;
+      --success-soft: #064E3B;
+      --warning: #FBBF24;
+      --warning-soft: #78350F;
+      --error: #F87171;
+      --error-soft: #7F1D1D;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Login overlay */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 380px;
+      text-align: center;
+    }
+
+    .login-card h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .login-card input {
+      width: 100%;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .login-card input:focus {
+      border-color: var(--accent);
+    }
+
+    .login-card button {
+      width: 100%;
+      padding: 16px;
+      background: var(--text-primary);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .login-card button:hover { opacity: 0.9; }
+
+    .login-error {
+      color: var(--error);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* Dashboard */
+    #dashboard { display: none; }
+
+    .header {
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: var(--text-primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--bg);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header h1 span {
+      color: var(--text-tertiary);
+      font-weight: 500;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    .btn-logout {
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { border-color: var(--error); color: var(--error); }
+
+    .container { padding: 32px 40px; max-width: 1400px; }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card:hover { border-color: var(--accent); }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .stat-card.accent .stat-value { color: var(--accent); }
+    .stat-card.success .stat-value { color: var(--success); }
+    .stat-card.warning .stat-value { color: var(--warning); }
+    .stat-card.error .stat-value { color: var(--error); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-tertiary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+    }
+
+    .tab:hover { color: var(--text-secondary); }
+    .tab.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+
+    /* Tables */
+    .table-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-header h3 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .table-count {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 24px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 24px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    td.name {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-online { background: var(--accent-soft); color: var(--accent); }
+    .badge-in_person, .badge-in-person { background: var(--success-soft); color: var(--success); }
+    .badge-open { background: var(--success-soft); color: var(--success); }
+    .badge-full { background: var(--warning-soft); color: var(--warning); }
+    .badge-completed { background: rgba(255,255,255,0.05); color: var(--text-tertiary); }
+    .badge-cancelled { background: var(--error-soft); color: var(--error); }
+    .badge-pending { background: var(--warning-soft); color: var(--warning); }
+    .badge-accepted { background: var(--success-soft); color: var(--success); }
+    .badge-rejected { background: var(--error-soft); color: var(--error); }
+    .badge-yes { background: var(--success-soft); color: var(--success); }
+    .badge-no { background: rgba(255,255,255,0.05); color: var(--text-tertiary); }
+
+    .empty-state {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 20px 16px; }
+      .header { padding: 16px 20px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .table-container { overflow-x: auto; }
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Login -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <div class="logo" style="margin: 0 auto 24px;">S</div>
+      <h1>Admin Panel</h1>
+      <p>Enter the admin password to continue</p>
+      <input type="password" id="password-input" placeholder="Password" autofocus>
+      <button onclick="login()">Sign in</button>
+      <p class="login-error" id="login-error">Invalid password</p>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">S</div>
+        <h1>StudyMatch <span>Admin</span></h1>
+      </div>
+      <button class="btn-logout" onclick="logout()">Log out</button>
+    </div>
+
+    <div class="container">
+      <!-- Stats -->
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('users', this)">Users</button>
+        <button class="tab" onclick="switchTab('sessions', this)">Sessions</button>
+        <button class="tab" onclick="switchTab('requests', this)">Requests</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <div class="table-header">
+          <h3 id="table-title">All Users</h3>
+          <span class="table-count" id="table-count">0 records</span>
+        </div>
+        <div id="table-body" style="overflow-x: auto;">
+          <div class="empty-state"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api/v1/admin';
+    let adminPassword = '';
+
+    // Enter key login
+    document.getElementById('password-input').addEventListener('keyup', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    async function login() {
+      adminPassword = document.getElementById('password-input').value;
+      try {
+        const res = await fetch(`${API}/stats?password=${encodeURIComponent(adminPassword)}`);
+        if (!res.ok) throw new Error();
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadDashboard();
+      } catch {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      adminPassword = '';
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('password-input').value = '';
+      document.getElementById('login-error').style.display = 'none';
+    }
+
+    async function loadDashboard() {
+      await loadStats();
+      await loadUsers();
+    }
+
+    async function loadStats() {
+      const res = await fetch(`${API}/stats?password=${encodeURIComponent(adminPassword)}`);
+      const s = await res.json();
+
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card accent">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">${s.total_users}</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Total Sessions</div>
+          <div class="stat-value">${s.total_sessions}</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Active Sessions</div>
+          <div class="stat-value">${s.active_sessions}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Online Sessions</div>
+          <div class="stat-value">${s.online_sessions}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">In-Person Sessions</div>
+          <div class="stat-value">${s.in_person_sessions}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Requests</div>
+          <div class="stat-value">${s.total_requests}</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Accepted</div>
+          <div class="stat-value">${s.accepted_requests}</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value">${s.pending_requests}</div>
+        </div>
+      `;
+    }
+
+    function switchTab(tab, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      if (tab === 'users') loadUsers();
+      else if (tab === 'sessions') loadSessions();
+      else if (tab === 'requests') loadRequests();
+    }
+
+    async function loadUsers() {
+      document.getElementById('table-title').textContent = 'All Users';
+      document.getElementById('table-body').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+      const res = await fetch(`${API}/users?password=${encodeURIComponent(adminPassword)}`);
+      const users = await res.json();
+
+      document.getElementById('table-count').textContent = `${users.length} records`;
+
+      if (!users.length) {
+        document.getElementById('table-body').innerHTML = '<div class="empty-state">No users yet</div>';
+        return;
+      }
+
+      document.getElementById('table-body').innerHTML = `
+        <table>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Year</th>
+            <th>Campus</th>
+            <th>Verified</th>
+            <th>Joined</th>
+          </tr>
+          ${users.map(u => `
+            <tr>
+              <td class="name">${esc(u.full_name)}</td>
+              <td>${esc(u.email)}</td>
+              <td>${esc(u.department)}</td>
+              <td>Year ${u.year}</td>
+              <td>${esc(u.campus)}</td>
+              <td><span class="badge badge-${u.is_verified ? 'yes' : 'no'}">${u.is_verified ? 'Yes' : 'No'}</span></td>
+              <td>${formatDate(u.created_at)}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+
+    async function loadSessions() {
+      document.getElementById('table-title').textContent = 'All Sessions';
+      document.getElementById('table-body').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+      const res = await fetch(`${API}/sessions?password=${encodeURIComponent(adminPassword)}`);
+      const sessions = await res.json();
+
+      document.getElementById('table-count').textContent = `${sessions.length} records`;
+
+      if (!sessions.length) {
+        document.getElementById('table-body').innerHTML = '<div class="empty-state">No sessions yet</div>';
+        return;
+      }
+
+      document.getElementById('table-body').innerHTML = `
+        <table>
+          <tr>
+            <th>Subject</th>
+            <th>Host</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Scheduled</th>
+            <th>Duration</th>
+            <th>Participants</th>
+            <th>Requests</th>
+            <th>Campus</th>
+          </tr>
+          ${sessions.map(s => `
+            <tr>
+              <td class="name">${esc(s.subject)}${s.topic ? ' — ' + esc(s.topic) : ''}</td>
+              <td>${esc(s.host_name)}</td>
+              <td><span class="badge badge-${s.session_type}">${s.session_type === 'in_person' ? 'In Person' : 'Online'}</span></td>
+              <td><span class="badge badge-${s.status}">${s.status}</span></td>
+              <td>${formatDate(s.scheduled_at)}</td>
+              <td>${s.duration_minutes} min</td>
+              <td>${s.participant_count} / ${s.max_participants}</td>
+              <td>${s.request_count}</td>
+              <td>${esc(s.campus)}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+
+    async function loadRequests() {
+      document.getElementById('table-title').textContent = 'All Join Requests';
+      document.getElementById('table-body').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+      const res = await fetch(`${API}/requests?password=${encodeURIComponent(adminPassword)}`);
+      const requests = await res.json();
+
+      document.getElementById('table-count').textContent = `${requests.length} records`;
+
+      if (!requests.length) {
+        document.getElementById('table-body').innerHTML = '<div class="empty-state">No requests yet</div>';
+        return;
+      }
+
+      document.getElementById('table-body').innerHTML = `
+        <table>
+          <tr>
+            <th>Requester</th>
+            <th>Email</th>
+            <th>Session</th>
+            <th>Status</th>
+            <th>Message</th>
+            <th>Submitted</th>
+          </tr>
+          ${requests.map(r => `
+            <tr>
+              <td class="name">${esc(r.requester_name)}</td>
+              <td>${esc(r.requester_email)}</td>
+              <td>${esc(r.session_subject)}</td>
+              <td><span class="badge badge-${r.status}">${r.status}</span></td>
+              <td>${r.message ? esc(r.message) : '—'}</td>
+              <td>${formatDate(r.created_at)}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
