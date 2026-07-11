@@ -2,7 +2,7 @@ fastapi[standard]==0.115.0
 uvicorn[standard]==0.30.0
 sqlalchemy[asyncio]==2.0.35
 aiosqlite==0.20.0
-# asyncpg==0.30.0  # Uncomment for PostgreSQL in production
+asyncpg==0.30.0
 alembic==1.13.0
 pydantic-settings==2.5.0
 python-jose[cryptography]==3.3.0
